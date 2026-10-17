@@ -245,17 +245,19 @@ function statusMode(s) {
       $('s-count').textContent = mmss(left);
       if (left <= 0) { $('s-before').classList.add('hidden'); $('s-drawing').classList.remove('hidden'); }
     }, 500);
-    let busy = false;
-    poll = setInterval(async () => {   // 10秒おきに確認（LINE登録の反映・抽選結果）
-      if (busy) return;
-      busy = true;
+    let busy = false, last = 0;
+    poll = setInterval(async () => {   // 普段は10秒おき、締切の瞬間からは2秒おきに確認
+      const left = s.end - now();
+      const due = left <= 0 && left > -60000;
+      if (busy || (!due && Date.now() - last < 10000)) return;
+      busy = true; last = Date.now();
       try {
         const v = await call('getView', s.token);
         if (v.status && v.status.drawn) { view = v; clearInterval(tick); clearInterval(poll); statusMode(v.status); }
         else if (v.status) { $('s-line').classList.toggle('hidden', v.status.line || !v.status.lineUrl); $('s-line-ok').classList.toggle('hidden', !v.status.line); }
       }
       catch (e) {} finally { busy = false; }
-    }, 10000);
+    }, 2000);
     return;
   }
 
@@ -284,6 +286,7 @@ function boardMode() {
   const draw = async () => {
     let b; try { b = await call('getBoard'); } catch (e) { return; }
     offset = b.now - Date.now();
+    window.__ends = b.rounds.filter(r => !r.drawn).map(r => r.end + 500);
     $('v-board').innerHTML = b.rounds.map(r => {
       let body;
       if (r.drawn) {
@@ -301,6 +304,11 @@ function boardMode() {
     }).join('') + '<p class="muted center">抽選はシステムが受付番号の一覧から自動で行います（SHA-256による乱数）。同じデータなら誰が計算しても同じ結果になり、人の手は一切入りません。</p>';
   };
   draw(); setInterval(draw, 10000);
+  setInterval(() => { // 締切の瞬間に合わせて結果を取りに行く
+    if (!window.__ends) return;
+    const t = now();
+    if (window.__ends.some(e => t >= e && t - e < 2500)) draw();
+  }, 2000);
 }
 </script>
 </body>
