@@ -30,6 +30,8 @@
   .btn:disabled { opacity:.5; }
   .btn.line { background:#06c755; color:#fff; }
   .btn.ghost { background:transparent; color:var(--orange2); border:1.5px solid var(--orange2); font-size:15px; padding:12px; }
+  .opt { margin-top:16px; font-size:14px; color:var(--sub); }
+  .opt summary { cursor:pointer; }
   .err { color:var(--red); font-weight:700; margin-top:12px; min-height:1em; }
   .rules { font-size:13px; color:var(--sub); line-height:1.8; padding-left:1.2em; margin:0; }
   .count { font-size:44px; font-weight:900; color:var(--orange); letter-spacing:.04em; font-variant-numeric:tabular-nums; }
@@ -75,16 +77,12 @@
       <input name="name" autocomplete="name" placeholder="例）久留米 花子" required>
       <label>電話番号<small>必須</small></label>
       <input name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="例）09012345678" required>
-      <label>メールアドレス<small>任意（LINEで受け取る方は空欄でOK）</small></label>
-      <input name="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）hanako@example.com">
-      <label>撮影するお子さまの人数<small>必須</small></label>
-      <select name="kids" required>
-        <option value="">選んでください</option>
-        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
-      </select>
-      <label class="check"><input type="checkbox" name="agree" required>
-        <span>ご入力いただいた情報は、この抽選と撮影のご連絡のみに使用します。同意のうえ応募します。</span></label>
-      <button class="btn" id="submit">この内容で応募する</button>
+      <details class="opt">
+        <summary>LINEを使わない方（メールで受け取る）</summary>
+        <input name="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）hanako@example.com" style="margin-top:8px">
+      </details>
+      <button class="btn" id="submit">応募する</button>
+      <p class="muted" style="font-size:12px;margin:10px 0 0;text-align:center">ご入力の情報は、この抽選と撮影のご連絡のみに使用します。<br>結果は応募後に「公式LINE」でも受け取れます。</p>
       <div class="err" id="f-err"></div>
     </form>
     <div class="card">
@@ -197,16 +195,15 @@ function formMode(r) {
   $('form').onsubmit = async ev => {
     ev.preventDefault();
     const f = ev.target;
-    if (!f.agree.checked) { $('f-err').textContent = '同意のチェックをお願いします。'; return; }
     $('submit').disabled = true; $('submit').textContent = '送信中…'; $('f-err').textContent = '';
     try {
-      const res = await call('register', { roundId: r.id, name: f.name.value, tel: f.tel.value, mail: f.mail.value, kids: f.kids.value });
+      const res = await call('register', { roundId: r.id, name: f.name.value, tel: f.tel.value, mail: f.mail.value });
       lsSet('hw_token', res.token);
       if (res.dup) alert('この電話番号はすでに応募済みです。受付番号 ' + res.receipt + ' の状況を表示します。');
       load(res.token);
     } catch (e) {
       $('f-err').textContent = (e && e.message || '送信できませんでした').replace(/^Error:\s*/, '');
-      $('submit').disabled = false; $('submit').textContent = 'この内容で応募する';
+      $('submit').disabled = false; $('submit').textContent = '応募する';
     }
   };
 }
