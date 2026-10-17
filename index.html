@@ -70,7 +70,7 @@
     <div class="card center">
       <div class="muted">受付締切まで</div>
       <div class="count" id="f-count">--:--</div>
-      <div class="muted">締切と同時に<b>自動で抽選</b>し、結果を<b>公式LINE</b>・この画面でお知らせします</div>
+      <div class="muted">締切と同時に<b>自動で抽選</b>し、結果を<b>この画面</b>でお知らせします</div>
     </div>
     <form class="card" id="form" autocomplete="on">
       <label>代表者さまのお名前<small>必須</small></label>
@@ -78,11 +78,11 @@
       <label>電話番号<small>必須</small></label>
       <input name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="例）09012345678" required>
       <details class="opt">
-        <summary>LINEを使わない方（メールで受け取る）</summary>
+        <summary>メールでも結果を受け取る（任意）</summary>
         <input name="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）hanako@example.com" style="margin-top:8px">
       </details>
       <button class="btn" id="submit">応募する</button>
-      <p class="muted" style="font-size:12px;margin:10px 0 0;text-align:center">ご入力の情報は、この抽選と撮影のご連絡のみに使用します。<br>結果は応募後に「公式LINE」でも受け取れます。</p>
+      <p class="muted" style="font-size:12px;margin:10px 0 0;text-align:center">ご入力の情報は、この抽選と撮影のご連絡のみに使用します。<br>結果は応募後の画面に自動で表示されます。</p>
       <div class="err" id="f-err"></div>
     </form>
     <div class="card">
@@ -231,7 +231,7 @@ function statusMode(s) {
   $('s-receipt').textContent = s.receipt;
   $('s-name').textContent = s.name + ' 様';
   $('s-link').href = BASE + '?t=' + s.token;
-  $('s-line').classList.toggle('hidden', s.line);
+  $('s-line').classList.toggle('hidden', s.line || !s.lineUrl);
   $('s-line-ok').classList.toggle('hidden', !s.line);
   $('s-line-btn').href = s.lineUrl;
   const open = view.open;
@@ -252,7 +252,7 @@ function statusMode(s) {
       try {
         const v = await call('getView', s.token);
         if (v.status && v.status.drawn) { view = v; clearInterval(tick); clearInterval(poll); statusMode(v.status); }
-        else if (v.status) { $('s-line').classList.toggle('hidden', v.status.line); $('s-line-ok').classList.toggle('hidden', !v.status.line); }
+        else if (v.status) { $('s-line').classList.toggle('hidden', v.status.line || !v.status.lineUrl); $('s-line-ok').classList.toggle('hidden', !v.status.line); }
       }
       catch (e) {} finally { busy = false; }
     }, 10000);
