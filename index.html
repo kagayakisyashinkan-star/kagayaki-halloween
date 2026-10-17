@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ハロウィン撮影会 当日抽選｜久留米かがやき写真館</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#1d1426; --card:#2a1d38; --line:#43305a; --ink:#f7efe4; --sub:#c9b8d8; --orange:#ff8a1f; --orange2:#ffb45c; --green:#7fdc8a; --red:#ff6b6b; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg) radial-gradient(circle at 50% -10%, #3d2457 0, transparent 60%); color:var(--ink);
+         font-family:'Zen Maru Gothic', 'Hiragino Maru Gothic ProN', sans-serif; font-weight:500; min-height:100vh; }
+  .wrap { max-width:520px; margin:0 auto; padding:24px 16px 48px; }
+  .brand { text-align:center; font-size:13px; letter-spacing:.15em; color:var(--sub); }
+  h1 { text-align:center; font-size:26px; font-weight:900; margin:6px 0 4px; line-height:1.35; }
+  h1 .o { color:var(--orange); }
+  .lead { text-align:center; color:var(--sub); font-size:14px; margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:20px; margin:14px 0; }
+  .center { text-align:center; }
+  label { display:block; font-weight:700; margin:14px 0 6px; font-size:15px; }
+  label small { color:var(--orange2); font-weight:500; margin-left:6px; }
+  input, select { width:100%; font:inherit; font-size:17px; padding:13px 14px; border-radius:12px; border:1px solid var(--line); background:#160f1e; color:var(--ink); }
+  input:focus, select:focus { outline:2px solid var(--orange); border-color:transparent; }
+  .check { display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--sub); margin-top:16px; }
+  .check input { width:22px; height:22px; flex:none; margin-top:1px; }
+  .btn { display:block; width:100%; border:0; border-radius:999px; padding:16px; margin-top:20px; font:inherit; font-size:18px; font-weight:900;
+         background:linear-gradient(180deg,var(--orange2),var(--orange)); color:#2a1300; cursor:pointer; text-align:center; text-decoration:none; }
+  .btn:disabled { opacity:.5; }
+  .btn.line { background:#06c755; color:#fff; }
+  .btn.ghost { background:transparent; color:var(--orange2); border:1.5px solid var(--orange2); font-size:15px; padding:12px; }
+  .err { color:var(--red); font-weight:700; margin-top:12px; min-height:1em; }
+  .rules { font-size:13px; color:var(--sub); line-height:1.8; padding-left:1.2em; margin:0; }
+  .count { font-size:44px; font-weight:900; color:var(--orange); letter-spacing:.04em; font-variant-numeric:tabular-nums; }
+  .receipt { font-size:56px; font-weight:900; letter-spacing:.06em; margin:4px 0; }
+  .tag { display:inline-block; padding:4px 14px; border-radius:999px; font-size:14px; font-weight:700; background:#3a2850; color:var(--sub); }
+  .win { color:var(--green); } .wait { color:var(--orange2); }
+  .big { font-size:34px; font-weight:900; margin:10px 0; }
+  .muted { color:var(--sub); font-size:14px; line-height:1.8; }
+  .slot { font-size:28px; font-weight:900; color:var(--orange2); }
+  .spin { display:inline-block; width:28px; height:28px; border:3px solid var(--line); border-top-color:var(--orange); border-radius:50%; animation:s 1s linear infinite; }
+  @keyframes s { to { transform:rotate(360deg); } }
+  .hidden { display:none !important; }
+  /* 会場ボード */
+  body.board .wrap { max-width:1100px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; margin-top:12px; }
+  .num { background:#160f1e; border:1px solid var(--line); border-radius:14px; padding:12px 8px; text-align:center; }
+  .num b { display:block; font-size:30px; font-weight:900; letter-spacing:.04em; }
+  .num span { display:block; font-size:15px; color:var(--orange2); }
+  .num.p { border-color:var(--green); }
+  .waits { font-size:20px; letter-spacing:.05em; line-height:1.9; color:var(--sub); word-break:keep-all; }
+  .seed { font-family:ui-monospace,Menlo,monospace; font-size:11px; color:#8e7aa3; word-break:break-all; margin-top:14px; }
+  .pumpkin { font-size:44px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="pumpkin">🎃</div>
+  <div class="brand">久留米かがやき写真館</div>
+  <h1><span class="o">ハロウィン撮影会</span><br>当日抽選</h1>
+
+  <div id="loading" class="card center"><div class="spin"></div><p class="muted">読み込み中…</p></div>
+
+  <!-- 応募フォーム -->
+  <div id="v-form" class="hidden">
+    <p class="lead" id="f-round"></p>
+    <div class="card center">
+      <div class="muted">受付締切まで</div>
+      <div class="count" id="f-count">--:--</div>
+      <div class="muted">締切と同時に<b>自動で抽選</b>し、結果を<b>公式LINE</b>・この画面でお知らせします</div>
+    </div>
+    <form class="card" id="form" autocomplete="on">
+      <label>代表者さまのお名前<small>必須</small></label>
+      <input name="name" autocomplete="name" placeholder="例）久留米 花子" required>
+      <label>電話番号<small>必須</small></label>
+      <input name="tel" type="tel" inputmode="numeric" autocomplete="tel" placeholder="例）09012345678" required>
+      <label>メールアドレス<small>任意（LINEで受け取る方は空欄でOK）</small></label>
+      <input name="mail" type="email" inputmode="email" autocomplete="email" placeholder="例）hanako@example.com">
+      <label>撮影するお子さまの人数<small>必須</small></label>
+      <select name="kids" required>
+        <option value="">選んでください</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+      </select>
+      <label class="check"><input type="checkbox" name="agree" required>
+        <span>ご入力いただいた情報は、この抽選と撮影のご連絡のみに使用します。同意のうえ応募します。</span></label>
+      <button class="btn" id="submit">この内容で応募する</button>
+      <div class="err" id="f-err"></div>
+    </form>
+    <div class="card">
+      <ul class="rules">
+        <li>応募は<b>1家族1回</b>まで（同じ電話番号での重複応募はできません）</li>
+        <li>抽選はシステムが<b>自動で</b>行います。スタッフは結果に関わりません</li>
+        <li>当選者の受付番号は会場ボードにも掲示します（お名前は出しません）</li>
+        <li>当選の方がお越しにならない場合、補欠の方へ番号順に繰り上げます</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 受付前 / 終了 -->
+  <div id="v-wait" class="card center hidden">
+    <p class="big" id="w-title"></p>
+    <div class="count" id="w-count"></div>
+    <p class="muted" id="w-text"></p>
+  </div>
+
+  <!-- 自分の結果 -->
+  <div id="v-status" class="hidden">
+    <div class="card center">
+      <div class="tag" id="s-round"></div>
+      <div class="muted" style="margin-top:12px">受付番号</div>
+      <div class="receipt" id="s-receipt"></div>
+      <div class="muted" id="s-name"></div>
+    </div>
+    <div class="card center" id="s-before">
+      <p class="big">応募を受け付けました！</p>
+      <div class="muted">抽選まで</div>
+      <div class="count" id="s-count">--:--</div>
+      <p class="muted">締切と同時に自動で抽選します。<br>この画面は<b>開いたままでOK</b>。結果が自動で表示されます。</p>
+    </div>
+    <div class="card center hidden" id="s-drawing"><div class="spin"></div><p class="big">抽選中…</p></div>
+    <div class="card center hidden" id="s-after"></div>
+    <div class="card center line-card hidden" id="s-line">
+      <p style="margin:0 0 6px;font-weight:900;font-size:18px">結果を公式LINEで受け取る</p>
+      <p class="muted" style="margin:0">ボタンを押すとLINEが開きます。<br>入力済みのメッセージを<b>そのまま送信</b>するだけでOK！</p>
+      <a class="btn line" id="s-line-btn" href="#">LINEで受け取る</a>
+      <p class="muted" style="margin:10px 0 0;font-size:12px">※友だち追加がまだの方は、追加してから送信してください</p>
+    </div>
+    <div class="card center hidden" id="s-line-ok"><b style="color:var(--green)">✓ LINE登録済み</b><div class="muted">結果は公式LINEにも届きます</div></div>
+    <a class="btn ghost" id="s-link" href="#">この結果ページを開く（ブックマーク・スクショ推奨）</a>
+    <button class="btn ghost hidden" id="s-next">次の回に応募する</button>
+  </div>
+
+  <!-- 会場ボード -->
+  <div id="v-board" class="hidden"></div>
+</div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbwstR81pdPO8_BT8a4zVqtQ4pn3ZvftPYRGNGk701zxKh2f4Hms4ADTGoCrQ_-FTt1PYQ/exec';
+const Q = new URLSearchParams(location.search);
+const PAGE = Q.get('p') || '';
+const TOKEN_Q = (Q.get('t') || '').replace(/[^0-9a-z]/gi, '');
+const BASE = location.origin + location.pathname;
+const $ = id => document.getElementById(id);
+let offset = 0, view = null, tick = null, poll = null;
+
+// Googleのログイン状態に左右されないよう、Cookieを送らずにAPIを呼ぶ
+async function call(fn, arg) {
+  const opt = { credentials: 'omit', redirect: 'follow' };
+  let res;
+  if (fn === 'register') res = await fetch(API, Object.assign(opt, { method: 'POST', body: JSON.stringify(Object.assign({ action: 'register' }, arg)) }));
+  else res = await fetch(API + '?action=' + (fn === 'getBoard' ? 'board' : 'view&token=' + encodeURIComponent(arg || '')), opt);
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error);
+  return j.data;
+}
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function now() { return Date.now() + offset; }
+function hm(ms) { const d = new Date(ms); return d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); }
+function mmss(ms) {
+  ms = Math.max(0, ms); const s = Math.ceil(ms / 1000);
+  const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(r).padStart(2, '0');
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function show(id) {
+  ['loading', 'v-form', 'v-wait', 'v-status', 'v-board'].forEach(x => $(x).classList.toggle('hidden', x !== id));
+}
+function every(fn, ms) { fn(); return setInterval(fn, ms); }
+
+// ── 起動 ──
+if (PAGE === 'board') boardMode(); else load(TOKEN_Q || lsGet('hw_token') || '');
+
+async function load(token) {
+  clearInterval(tick); clearInterval(poll);
+  try {
+    view = await call('getView', token);
+  } catch (e) {
+    show('v-wait'); $('w-title').textContent = '通信エラー'; $('w-text').textContent = '電波の良い場所で再読み込みしてください。'; return;
+  }
+  offset = view.now - Date.now();
+  if (view.status) return statusMode(view.status);
+  if (view.open) return formMode(view.open);
+  waitMode();
+}
+
+// ── 応募フォーム ──
+function formMode(r) {
+  show('v-form');
+  $('f-round').textContent = r.name + '（当選 ' + r.slots + '組）';
+  tick = every(() => {
+    const left = r.end - now();
+    $('f-count').textContent = mmss(left);
+    if (left <= 0) { clearInterval(tick); $('submit').disabled = true; $('f-err').textContent = '受付は締め切りました。'; }
+  }, 500);
+  $('form').onsubmit = async ev => {
+    ev.preventDefault();
+    const f = ev.target;
+    if (!f.agree.checked) { $('f-err').textContent = '同意のチェックをお願いします。'; return; }
+    $('submit').disabled = true; $('submit').textContent = '送信中…'; $('f-err').textContent = '';
+    try {
+      const res = await call('register', { roundId: r.id, name: f.name.value, tel: f.tel.value, mail: f.mail.value, kids: f.kids.value });
+      lsSet('hw_token', res.token);
+      if (res.dup) alert('この電話番号はすでに応募済みです。受付番号 ' + res.receipt + ' の状況を表示します。');
+      load(res.token);
+    } catch (e) {
+      $('f-err').textContent = (e && e.message || '送信できませんでした').replace(/^Error:\s*/, '');
+      $('submit').disabled = false; $('submit').textContent = 'この内容で応募する';
+    }
+  };
+}
+
+// ── 受付前・終了 ──
+function waitMode() {
+  show('v-wait');
+  const u = view.upcoming;
+  if (u) {
+    $('w-title').textContent = u.name;
+    $('w-text').innerHTML = '受付開始は <b>' + hm(u.start) + '</b> から（締切 ' + hm(u.end) + '）<br>時間になると自動で応募フォームが開きます';
+    tick = every(() => { const left = u.start - now(); $('w-count').textContent = mmss(left); if (left <= 0) { clearInterval(tick); load(''); } }, 500);
+  } else {
+    $('w-title').textContent = '本日の受付は終了しました';
+    $('w-count').textContent = '';
+    $('w-text').innerHTML = 'たくさんのご応募ありがとうございました。<br><a style="color:var(--orange2)" href="' + BASE + '?p=board">抽選結果ボードを見る</a>';
+  }
+}
+
+// ── 自分の結果 ──
+function statusMode(s) {
+  show('v-status');
+  lsSet('hw_token', s.token);
+  $('s-round').textContent = s.roundName;
+  $('s-receipt').textContent = s.receipt;
+  $('s-name').textContent = s.name + ' 様';
+  $('s-link').href = BASE + '?t=' + s.token;
+  $('s-line').classList.toggle('hidden', s.line);
+  $('s-line-ok').classList.toggle('hidden', !s.line);
+  $('s-line-btn').href = s.lineUrl;
+  const open = view.open;
+  $('s-next').classList.toggle('hidden', !(open && open.id !== s.roundId));
+  $('s-next').onclick = () => { lsSet('hw_token', ''); formMode(open); };
+
+  if (!s.drawn) {
+    $('s-before').classList.remove('hidden'); $('s-after').classList.add('hidden'); $('s-drawing').classList.add('hidden');
+    tick = every(() => {
+      const left = s.end - now();
+      $('s-count').textContent = mmss(left);
+      if (left <= 0) { $('s-before').classList.add('hidden'); $('s-drawing').classList.remove('hidden'); }
+    }, 500);
+    let busy = false;
+    poll = setInterval(async () => {   // 10秒おきに確認（LINE登録の反映・抽選結果）
+      if (busy) return;
+      busy = true;
+      try {
+        const v = await call('getView', s.token);
+        if (v.status && v.status.drawn) { view = v; clearInterval(tick); clearInterval(poll); statusMode(v.status); }
+        else if (v.status) { $('s-line').classList.toggle('hidden', v.status.line); $('s-line-ok').classList.toggle('hidden', !v.status.line); }
+      }
+      catch (e) {} finally { busy = false; }
+    }, 10000);
+    return;
+  }
+
+  $('s-before').classList.add('hidden'); $('s-drawing').classList.add('hidden');
+  const a = $('s-after'); a.classList.remove('hidden');
+  if (s.result === '当選' || s.result === '繰上げ当選') {
+    a.innerHTML = '<p class="big win">🎉 ' + (s.result === '当選' ? '当選しました！' : '繰り上げ当選！') + '</p>' +
+      (s.slot ? '<div class="muted">撮影時間</div><div class="slot">' + esc(s.slot) + '</div>' : '') +
+      '<p class="muted">' + (s.slot ? '撮影時間の5分前までに' : '') + 'ブースの受付で、この画面をお見せください。' +
+      (s.result === '繰上げ当選' ? '<br><b>お早めにお越しください。</b>' : '') + '</p>';
+  } else if (s.result === '補欠') {
+    a.innerHTML = '<p class="big wait">補欠 ' + s.waitNo + ' 番</p>' +
+      '<p class="muted">たくさんのご応募をいただき、今回は当選となりませんでした。<br>枠が空いた場合は補欠の番号順に繰り上げ、この画面とメールでお知らせします。</p>';
+    poll = setInterval(async () => {   // 繰り上げに備えて30秒おきに確認
+      try { const v = await call('getView', s.token); if (v.status && v.status.result !== '補欠') { view = v; clearInterval(poll); statusMode(v.status); } } catch (e) {}
+    }, 30000);
+  } else {
+    a.innerHTML = '<p class="big">' + esc(s.result || '集計中') + '</p><p class="muted">ご不明点はブースのスタッフへお声がけください。</p>';
+  }
+}
+
+// ── 会場ボード（タブレット掲示用） ──
+function boardMode() {
+  document.body.classList.add('board');
+  show('v-board');
+  const draw = async () => {
+    let b; try { b = await call('getBoard'); } catch (e) { return; }
+    offset = b.now - Date.now();
+    $('v-board').innerHTML = b.rounds.map(r => {
+      let body;
+      if (r.drawn) {
+        body = '<div class="muted">応募 ' + r.count + '組 ／ 当選 ' + r.winners.length + '組 ／ 抽選 ' + r.drawnAt + '</div>' +
+          '<div class="grid">' + r.winners.map(w => '<div class="num' + (w.promoted ? ' p' : '') + '"><b>' + esc(w.receipt) + '</b>' +
+            (w.promoted ? '<span>繰上げ</span>' : '') + '</div>').join('') + '</div>' +
+          (r.waits.length ? '<p class="muted" style="margin-top:18px">補欠（この順に繰り上げ）</p><div class="waits">' + r.waits.map(esc).join('　') + '</div>' : '') +
+          '<div class="seed">抽選シード: ' + esc(r.seed) + '</div>';
+      } else if (now() < r.start) {
+        body = '<div class="muted">受付 ' + hm(r.start) + '〜' + hm(r.end) + '（当選 ' + r.slots + '組）</div><div class="count">開始まで ' + mmss(r.start - now()) + '</div>';
+      } else {
+        body = '<div class="muted">受付中！ 締切 ' + hm(r.end) + '（当選 ' + r.slots + '組）</div><div class="count">抽選まで ' + mmss(r.end - now()) + '</div><div class="muted">現在の応募 ' + r.count + '組</div>';
+      }
+      return '<div class="card"><p class="big" style="margin-top:0">' + esc(r.name) + '</p>' + body + '</div>';
+    }).join('') + '<p class="muted center">抽選はシステムが受付番号の一覧から自動で行います（SHA-256による乱数）。同じデータなら誰が計算しても同じ結果になり、人の手は一切入りません。</p>';
+  };
+  draw(); setInterval(draw, 10000);
+}
+</script>
+</body>
+</html>
